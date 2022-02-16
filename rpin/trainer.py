@@ -6,7 +6,8 @@ from rpin.utils.misc import tprint
 from timeit import default_timer as timer
 from rpin.utils.config import _C as C
 from rpin.utils.bbox import xyxy_to_rois, xyxy_to_posf
-
+from collections import defaultdict
+import json
 
 class Trainer(object):
     def __init__(self, device, train_loader, val_loader, model, optim,
@@ -36,6 +37,7 @@ class Trainer(object):
         self._setup_loss()
         # timer setting
         self.best_mean = 1e6
+        self.loss_hist = defaultdict(list)
 
     def train(self):
         print_msg = "| ".join(["progress  | mean "] + list(map("{:6}".format, self.loss_name)))
@@ -45,6 +47,9 @@ class Trainer(object):
         while self.iterations < self.max_iters:
             self.train_epoch()
             self.epochs += 1
+        loss_out_path = os.path.join(self.output_dir, "loss_out.json")
+        with open(loss_out_path, "w+") as wf:
+            json.dump(self.loss_hist, wf, indent=4)
 
     def train_epoch(self):
         for batch_idx, (data, data_t, rois, gt_boxes, gt_masks, valid, g_idx, seq_l) in enumerate(self.train_loader):
@@ -73,12 +78,15 @@ class Trainer(object):
             print_msg += f"{mean_loss:.3f} | "
             print_msg += f" | ".join(
                 ["{:.3f}".format(self.losses[name] * 1e3 / self.loss_cnt) for name in self.loss_name])
+            for name in self.loss_name:
+                self.loss_hist[name].append(self.losses[name] * 1e3 / self.loss_cnt)
             if C.RPIN.SEQ_CLS_LOSS_WEIGHT:
                 print_msg += f" | {self.fg_correct / self.fg_num:.3f} | {self.bg_correct / self.bg_num:.3f}"
             speed = self.loss_cnt / (timer() - self.time)
             eta = (self.max_iters - self.iterations) / speed / 3600
             print_msg += f" | speed: {speed:.1f} | eta: {eta:.2f} h"
-            print_msg += (" " * (os.get_terminal_size().columns - len(print_msg) - 10))
+            #print_msg += (" " * (os.get_terminal_size().columns - len(print_msg) - 10))
+            print_msg += (" " * (190 - len(print_msg) - 10))
             tprint(print_msg)
 
             if self.iterations % self.val_interval == 0:
@@ -158,7 +166,7 @@ class Trainer(object):
         print_msg += f" | ".join(["{:.3f}".format(self.losses[name] * 1e3 / self.loss_cnt) for name in self.loss_name])
         if C.RPIN.SEQ_CLS_LOSS_WEIGHT:
             print_msg += f" | {self.fg_correct / (self.fg_num + 1e-9):.3f} | {self.bg_correct / (self.bg_num + 1e-9):.3f}"
-        print_msg += (" " * (os.get_terminal_size().columns - len(print_msg) - 10))
+        print_msg += (" " * (190 - len(print_msg) - 10))
         self.logger.info(print_msg)
 
     def loss(self, outputs, labels, phase):

@@ -38,7 +38,7 @@ def main():
     random.seed(rng_seed)
     np.random.seed(rng_seed)
     torch.manual_seed(rng_seed)
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+    #os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
     if torch.cuda.is_available():
         torch.backends.cudnn.deterministic = True
         torch.cuda.manual_seed(0)
@@ -89,6 +89,7 @@ def main():
     train_set = eval(f'{cfg.DATASET_ABS}')(data_root=cfg.DATA_ROOT, split='train', image_ext=cfg.RPIN.IMAGE_EXT)
     val_set = eval(f'{cfg.DATASET_ABS}')(data_root=cfg.DATA_ROOT, split='test', image_ext=cfg.RPIN.IMAGE_EXT)
     kwargs = {'pin_memory': True, 'num_workers': 16}
+    print(train_set)
     train_loader = torch.utils.data.DataLoader(
         train_set, batch_size=cfg.SOLVER.BATCH_SIZE, shuffle=True, **kwargs,
     )

@@ -19,7 +19,7 @@ def arg_parse():
     parser.add_argument('--cfg', required=True, help='path to config file', type=str)
     parser.add_argument('--predictor-init', type=str, help='', default=None)
     parser.add_argument('--predictor-arch', type=str, default=None)
-    parser.add_argument('--plot-image', type=int, default=0, help='how many images are plotted')
+    parser.add_argument('--plot-image', type=int, default=1000, help='how many images are plotted')
     parser.add_argument('--gpus', type=str)
     parser.add_argument('--eval', type=str, default=None)
     # below are only for PHYRE planning
@@ -53,6 +53,7 @@ def main():
     if args.predictor_init:
         cache_name += args.predictor_init.split('/')[-2]
     output_dir = os.path.join(C.OUTPUT_DIR, cache_name)
+    print("output to ", output_dir)
 
     if args.eval == 'plan':
         assert 'reasoning' in C.DATA_ROOT
@@ -77,9 +78,12 @@ def main():
 
     # --- setup data loader
     print('initialize dataset')
-    split_name = 'test'
+    split_name = "test"
+    print(C.DATASET_ABS, C.DATA_ROOT, C.RPIN.IMAGE_EXT)
     val_set = eval(f'{C.DATASET_ABS}')(data_root=C.DATA_ROOT, split=split_name, image_ext=C.RPIN.IMAGE_EXT)
+    print(len(val_set))
     batch_size = 1 if C.RPIN.VAE else C.SOLVER.BATCH_SIZE * num_gpus
+    print("batch_size", batch_size)
     val_loader = DataLoader(val_set, batch_size=batch_size, num_workers=16)
 
     model = eval(args.predictor_arch + '.Net')()

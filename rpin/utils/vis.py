@@ -72,21 +72,21 @@ def plot_rollouts(im_data, pred_boxes, gt_boxes, pred_masks=None, gt_masks=None,
 
     # # 4. print videos, need png since ffmpeg cannot deal with svg
     # # disable at default
-    # video_dir = os.path.join(output_dir, 'video')
-    # os.makedirs(video_dir, exist_ok=True)
-    # kwargs['format'] = 'png'
-    # for i in range(gt_boxes.shape[0]):
-    #     plt.axis('off')
-    #     plt.imshow(im_data[..., ::-1])
-    #     _plot_bbox_traj(gt_boxes[:i+1], size=320, alpha=1.0)
-    #     plt.savefig(f'{video_dir}/gt_{output_name}_{i}.png', **kwargs)
-    #     plt.close()
-    # for i in range(pred_boxes.shape[0]):
-    #     plt.axis('off')
-    #     plt.imshow(im_data[..., ::-1])
-    #     _plot_bbox_traj(pred_boxes[:i+1], size=320, alpha=1.0)
-    #     plt.savefig(f'{video_dir}/pred_{output_name}_{i}.png', **kwargs)
-    #     plt.close()
+    video_dir = os.path.join(output_dir, 'video')
+    os.makedirs(video_dir, exist_ok=True)
+    kwargs['format'] = 'png'
+    for i in range(gt_boxes.shape[0]):
+        plt.axis('off')
+        plt.imshow(im_data[..., ::-1])
+        _plot_bbox_traj(gt_boxes[:i+1], size=320, alpha=1.0)
+        plt.savefig(f'{video_dir}/gt_{output_name}_{i}.png', **kwargs)
+        plt.close()
+    for i in range(pred_boxes.shape[0]):
+        plt.axis('off')
+        plt.imshow(im_data[..., ::-1])
+        _plot_bbox_traj(pred_boxes[:i+1], size=320, alpha=1.0)
+        plt.savefig(f'{video_dir}/pred_{output_name}_{i}.png', **kwargs)
+        plt.close()
 
     if pred_masks is None:
         return

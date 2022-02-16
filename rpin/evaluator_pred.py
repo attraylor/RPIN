@@ -27,7 +27,7 @@ class PredEvaluator(object):
         self.input_height, self.input_width = C.RPIN.INPUT_HEIGHT, C.RPIN.INPUT_WIDTH
         # loss settings
         self._setup_loss()
-        self.high_resolution_plot = True
+        self.high_resolution_plot = False
         self.vae_num_samples = 100
 
     def test(self):
@@ -100,7 +100,6 @@ class PredEvaluator(object):
                     batch_size = C.SOLVER.BATCH_SIZE if not C.RPIN.VAE else 1
                     plot_image_idx = batch_size * batch_idx + i
                     if plot_image_idx < self.plot_image:
-                        tprint(f'plotting: {plot_image_idx}' + ' ' * 20)
                         video_idx, img_idx = self.val_loader.dataset.video_info[plot_image_idx]
                         video_name = self.val_loader.dataset.video_list[video_idx]
 
@@ -146,7 +145,7 @@ class PredEvaluator(object):
             self.losses = losses.copy()
             self.box_p_step_losses = box_p_step_losses.copy()
             self.loss_cnt = len(self.val_loader)
-
+        print("loss count", self.loss_cnt)
         print('\r', end='')
         print_msg = ""
         mean_loss = np.mean(np.array(self.box_p_step_losses[:self.ptest_size]) / self.loss_cnt) * 1e3
